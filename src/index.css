@@ -190,3 +190,49 @@ All colors MUST be HSL.
     }
   }
 }
+
+/* Pinch to Zoom - Add to globals.css */
+.pinch-zoom-container {
+  touch-action: none;
+  cursor: grab;
+}
+
+.pinch-zoom-container:active {
+  cursor: grabbing;
+}
+
+.pinch-zoom-image {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pinch-zoom-container.double-clicked .pinch-zoom-image {
+  transform: scale(2) !important;
+}
+
+/* Custom scrollbar for thumbnails */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-thumb-muted {
+  scrollbar-color: hsl(var(--muted-foreground)) transparent;
+}
+
+.pinch-zoom-container {
+  touch-action: none;
+  cursor: grab;
+}
+
+.pinch-zoom-container:active {
+  cursor: grabbing;
+}
+
+.pinch-zoom-image {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}

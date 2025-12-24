@@ -1,4 +1,4 @@
-// import React, { createContext, useContext, useState, useEffect } from 'react';
+// import React, { createContext, useContext, useState, useEffect } from "react";
 
 // export interface Product {
 //   id: string;
@@ -31,30 +31,39 @@
 
 // const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const [cart, setCart] = useState<CartItem[]>([]);
-//   const [promoCode, setPromoCode] = useState('');
-//   const [discount, setDiscount] = useState(0);
-
-//   // Load cart from localStorage on mount
-//   useEffect(() => {
-//     const savedCart = localStorage.getItem('luxeCart');
-//     if (savedCart) {
-//       setCart(JSON.parse(savedCart));
+// export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
+//   children,
+// }) => {
+//   // FIX: Use Lazy Initialization to load data synchronously before first render.
+//   // This prevents the "Save" effect from overwriting existing data with an empty array on mount.
+//   const [cart, setCart] = useState<CartItem[]>(() => {
+//     if (typeof window !== "undefined") {
+//       try {
+//         const savedCart = localStorage.getItem("luxeCart");
+//         return savedCart ? JSON.parse(savedCart) : [];
+//       } catch (error) {
+//         console.error("Failed to parse cart from local storage:", error);
+//         return [];
+//       }
 //     }
-//   }, []);
+//     return [];
+//   });
+
+//   // Standard state for promo/discount (NOT persisted, as requested)
+//   const [promoCode, setPromoCode] = useState("");
+//   const [discount, setDiscount] = useState(0);
 
 //   // Save cart to localStorage whenever it changes
 //   useEffect(() => {
-//     localStorage.setItem('luxeCart', JSON.stringify(cart));
+//     localStorage.setItem("luxeCart", JSON.stringify(cart));
 //   }, [cart]);
 
-//   // Apply promo code discount
+//   // Apply promo code discount logic
 //   useEffect(() => {
 //     const promoCodes: { [key: string]: number } = {
-//       'LUXE10': 10,
-//       'GOLD20': 20,
-//       'DIAMOND25': 25,
+//       LUXE10: 10,
+//       GOLD20: 20,
+//       DIAMOND25: 25,
 //     };
 //     setDiscount(promoCodes[promoCode.toUpperCase()] || 0);
 //   }, [promoCode]);
@@ -91,12 +100,16 @@
 
 //   const clearCart = () => {
 //     setCart([]);
-//     setPromoCode('');
+//     setPromoCode("");
 //     setDiscount(0);
+//     localStorage.removeItem("luxeCart"); // Optional: Clear storage when explicitly clearing cart
 //   };
 
 //   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-//   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+//   const totalPrice = cart.reduce(
+//     (sum, item) => sum + item.price * item.quantity,
+//     0
+//   );
 
 //   return (
 //     <CartContext.Provider
@@ -121,11 +134,10 @@
 // export const useCart = () => {
 //   const context = useContext(CartContext);
 //   if (!context) {
-//     throw new Error('useCart must be used within a CartProvider');
+//     throw new Error("useCart must be used within a CartProvider");
 //   }
 //   return context;
 // };
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface Product {
@@ -138,6 +150,8 @@ export interface Product {
   images: string[];
   description: string;
   inStock: boolean;
+  rating?: number; // new
+  ratingCount?: number; // new
 }
 
 export interface CartItem extends Product {
@@ -155,6 +169,7 @@ interface CartContextType {
   promoCode: string;
   setPromoCode: (code: string) => void;
   discount: number;
+  setDiscount: (amount: number) => void; // <--- ADDED THIS
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -162,8 +177,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // FIX: Use Lazy Initialization to load data synchronously before first render.
-  // This prevents the "Save" effect from overwriting existing data with an empty array on mount.
+  // Load initial cart from local storage synchronously
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window !== "undefined") {
       try {
@@ -177,7 +191,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     return [];
   });
 
-  // Standard state for promo/discount (NOT persisted, as requested)
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
 
@@ -186,15 +199,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("luxeCart", JSON.stringify(cart));
   }, [cart]);
 
-  // Apply promo code discount logic
-  useEffect(() => {
-    const promoCodes: { [key: string]: number } = {
-      LUXE10: 10,
-      GOLD20: 20,
-      DIAMOND25: 25,
-    };
-    setDiscount(promoCodes[promoCode.toUpperCase()] || 0);
-  }, [promoCode]);
+  // REMOVED: The hardcoded useEffect that auto-set discount based on promoCode string.
+  // Now, discount is set manually via setDiscount() after backend validation.
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -230,7 +236,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     setCart([]);
     setPromoCode("");
     setDiscount(0);
-    localStorage.removeItem("luxeCart"); // Optional: Clear storage when explicitly clearing cart
+    localStorage.removeItem("luxeCart");
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -252,6 +258,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         promoCode,
         setPromoCode,
         discount,
+        setDiscount, // <--- EXPOSED THIS
       }}
     >
       {children}

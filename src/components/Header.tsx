@@ -25,7 +25,7 @@ const Header = () => {
             to="/"
             className="text-2xl font-serif font-bold text-primary hover:text-primary/80 transition-colors"
           >
-            F I N E T A A R A
+            F I N E T A R A A
           </Link>
 
           {/* Desktop Navigation */}

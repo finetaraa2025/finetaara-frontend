@@ -9,7 +9,7 @@ const About = () => {
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl font-serif font-bold text-foreground mb-8 text-center">
-            About Finetaara Jewelry
+            About Finetaraa Jewelry
           </h1>
 
           <div className="prose prose-lg max-w-none">
@@ -18,7 +18,7 @@ const About = () => {
                 Our Story
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                For over two decades, Finetaara Jewelry has been synonymous with
+                For over two decades, Finetaraa Jewelry has been synonymous with
                 excellence in craftsmanship and timeless elegance. Founded by
                 master jewelers with a passion for creating extraordinary
                 pieces, we have established ourselves as a trusted name in
@@ -38,7 +38,7 @@ const About = () => {
                 Our Craftsmanship
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                At Finetaara Jewelry, we believe that true luxury lies in the
+                At Finetaraa Jewelry, we believe that true luxury lies in the
                 details. Our skilled artisans combine traditional techniques
                 with modern innovation to create pieces that are not just
                 beautiful, but also built to last for generations.
