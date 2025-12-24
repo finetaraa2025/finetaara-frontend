@@ -255,7 +255,7 @@ const BannerCarousel = () => {
     ) {
       return imagePath;
     }
-    const baseUrl = "http://127.0.0.1:8000";
+    const baseUrl = "https://api.finetaraa.com";
     const cleanPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
     return `${baseUrl}${cleanPath}`;
   };
@@ -263,7 +263,7 @@ const BannerCarousel = () => {
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/banners/");
+        const response = await fetch("https://api.finetaraa.com/api/banners/");
         if (!response.ok)
           throw new Error(`HTTP error! Status: ${response.status}`);
         const backendBanners = await response.json();

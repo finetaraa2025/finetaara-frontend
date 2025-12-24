@@ -30,13 +30,13 @@ export default defineConfig(({ mode }) => ({
     // Add this proxy section
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8000", // Your Django backend URL
+        target: "https://api.finetaraa.com/api", // Your Django backend URL
         changeOrigin: true,
         secure: false,
       },
       // Optional: Also proxy media if you use relative paths for images
       "/media": {
-        target: "http://127.0.0.1:8000",
+        target: "https://api.finetaraa.com/media",
         changeOrigin: true,
         secure: false,
       },

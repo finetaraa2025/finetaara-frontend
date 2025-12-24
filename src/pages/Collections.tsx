@@ -135,7 +135,10 @@ const Collections = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/categories/");
+        //const response = await fetch("http://127.0.0.1:8000/api/categories/");
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/categories/`
+        );
         if (response.ok) {
           const data = await response.json();
           // Backend returns array like ['Rings', 'Necklaces'], "All" is usually manually handled
@@ -173,8 +176,13 @@ const Collections = () => {
           params.append("search", debouncedSearch);
         }
 
+        // const response = await fetch(
+        //   `http://127.0.0.1:8000/api/products/?${params.toString()}`
+        // );
         const response = await fetch(
-          `http://127.0.0.1:8000/api/products/?${params.toString()}`
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/products/?${params.toString()}`
         );
 
         if (response.ok) {

@@ -142,7 +142,7 @@ const Home = () => {
       try {
         // Fetch from the specific "featured" endpoint
         const response = await fetch(
-          "http://127.0.0.1:8000/api/products/featured/"
+          `${import.meta.env.VITE_API_BASE_URL}/api/products/featured/`
         );
 
         if (response.ok) {
