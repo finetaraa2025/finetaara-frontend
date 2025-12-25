@@ -266,12 +266,16 @@ const Collections = () => {
         </motion.div>
 
         {/* Products Grid */}
+        {/* ... inside Collections.tsx return ... */}
+
+        {/* Products Grid */}
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          // Updated Grid: grid-cols-2 for mobile, reduced gap for mobile
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {products.length > 0 ? (
               products.map((product, index) => (
                 <motion.div

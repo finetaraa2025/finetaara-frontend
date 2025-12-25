@@ -196,8 +196,8 @@ const Home = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            /* Product Grid - Adjusted for up to 10 items */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8">
+            /* Product Grid - Updated for 2 columns on mobile */
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6 mb-8">
               {featuredProducts.length > 0 ? (
                 featuredProducts.map((product, index) => (
                   <motion.div
