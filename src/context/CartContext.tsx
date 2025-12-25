@@ -10,6 +10,8 @@
 //   images: string[];
 //   description: string;
 //   inStock: boolean;
+//   rating?: number; // new
+//   ratingCount?: number; // new
 // }
 
 // export interface CartItem extends Product {
@@ -27,6 +29,7 @@
 //   promoCode: string;
 //   setPromoCode: (code: string) => void;
 //   discount: number;
+//   setDiscount: (amount: number) => void; // <--- ADDED THIS
 // }
 
 // const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -34,8 +37,7 @@
 // export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 //   children,
 // }) => {
-//   // FIX: Use Lazy Initialization to load data synchronously before first render.
-//   // This prevents the "Save" effect from overwriting existing data with an empty array on mount.
+//   // Load initial cart from local storage synchronously
 //   const [cart, setCart] = useState<CartItem[]>(() => {
 //     if (typeof window !== "undefined") {
 //       try {
@@ -49,7 +51,6 @@
 //     return [];
 //   });
 
-//   // Standard state for promo/discount (NOT persisted, as requested)
 //   const [promoCode, setPromoCode] = useState("");
 //   const [discount, setDiscount] = useState(0);
 
@@ -58,15 +59,8 @@
 //     localStorage.setItem("luxeCart", JSON.stringify(cart));
 //   }, [cart]);
 
-//   // Apply promo code discount logic
-//   useEffect(() => {
-//     const promoCodes: { [key: string]: number } = {
-//       LUXE10: 10,
-//       GOLD20: 20,
-//       DIAMOND25: 25,
-//     };
-//     setDiscount(promoCodes[promoCode.toUpperCase()] || 0);
-//   }, [promoCode]);
+//   // REMOVED: The hardcoded useEffect that auto-set discount based on promoCode string.
+//   // Now, discount is set manually via setDiscount() after backend validation.
 
 //   const addToCart = (product: Product) => {
 //     setCart((prevCart) => {
@@ -102,7 +96,7 @@
 //     setCart([]);
 //     setPromoCode("");
 //     setDiscount(0);
-//     localStorage.removeItem("luxeCart"); // Optional: Clear storage when explicitly clearing cart
+//     localStorage.removeItem("luxeCart");
 //   };
 
 //   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -124,6 +118,7 @@
 //         promoCode,
 //         setPromoCode,
 //         discount,
+//         setDiscount, // <--- EXPOSED THIS
 //       }}
 //     >
 //       {children}
@@ -150,8 +145,8 @@ export interface Product {
   images: string[];
   description: string;
   inStock: boolean;
-  rating?: number; // new
-  ratingCount?: number; // new
+  rating?: number;
+  ratingCount?: number;
 }
 
 export interface CartItem extends Product {
@@ -169,7 +164,7 @@ interface CartContextType {
   promoCode: string;
   setPromoCode: (code: string) => void;
   discount: number;
-  setDiscount: (amount: number) => void; // <--- ADDED THIS
+  setDiscount: (amount: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -199,35 +194,45 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem("luxeCart", JSON.stringify(cart));
   }, [cart]);
 
-  // REMOVED: The hardcoded useEffect that auto-set discount based on promoCode string.
-  // Now, discount is set manually via setDiscount() after backend validation.
-
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      // FIX: Force both IDs to strings to ensure '5' matches 5
+      const productIdString = String(product.id);
+
+      const existingItem = prevCart.find(
+        (item) => String(item.id) === productIdString
+      );
+
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id
+          String(item.id) === productIdString
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      // FIX: Store the ID as a string explicitly in the new item
+      return [...prevCart, { ...product, id: productIdString, quantity: 1 }];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+    // FIX: Force string comparison
+    setCart((prevCart) =>
+      prevCart.filter((item) => String(item.id) !== String(productId))
+    );
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
+    // FIX: Force string conversion for the check
+    const idString = String(productId);
+
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(idString);
       return;
     }
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
+        String(item.id) === idString ? { ...item, quantity } : item
       )
     );
   };
@@ -240,8 +245,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  // FIX: Ensure price is treated as a number in case string prices slip in
   const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) =>
+      sum + (Number(item.discountPrice) || Number(item.price)) * item.quantity,
     0
   );
 
@@ -258,7 +266,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         promoCode,
         setPromoCode,
         discount,
-        setDiscount, // <--- EXPOSED THIS
+        setDiscount,
       }}
     >
       {children}

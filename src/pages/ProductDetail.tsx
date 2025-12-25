@@ -48,17 +48,14 @@ const ProductDetailPage = () => {
     const fetchProduct = async () => {
       try {
         if (!id) return;
-
-        // FIX: Add the API Base URL environment variable
         const baseUrl = import.meta.env.VITE_API_BASE_URL;
         const res = await fetch(`${baseUrl}/api/products/${id}/`);
-
         if (!res.ok) throw new Error("Product not found");
         const data = await res.json();
 
-        // (Your existing cleaning logic remains the same)
         const cleanedData = {
           ...data,
+          id: String(data.id), // <--- ADD THIS: Force ID to be a string
           images: data.images?.map((img: string) => cleanImageUrl(img)) || [],
         };
 
