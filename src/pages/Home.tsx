@@ -250,7 +250,7 @@ const Home = () => {
                 {
                   icon: "✨",
                   title: "Premium Quality",
-                  desc: "Only the finest 18K gold and certified gemstones",
+                  desc: "Only the finest 18K gold and qualified gemstones",
                 },
                 {
                   icon: "🎨",

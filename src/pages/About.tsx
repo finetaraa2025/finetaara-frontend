@@ -49,8 +49,8 @@ const About = () => {
                     Premium Materials
                   </h3>
                   <p className="text-accent-foreground/80">
-                    We use only 18K gold and certified, ethically sourced
-                    gemstones in all our creations.
+                    We use only 18K gold and ethically sourced gemstones in all
+                    our creations.
                   </p>
                 </div>
                 <div className="bg-accent p-6 rounded-lg">
