@@ -215,13 +215,11 @@ const Collections = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [bestsellerLoading, setBestsellerLoading] = useState(true);
+  const [trendingLoading, setTrendingLoading] = useState(true);
 
-  // State for the "debounced" search term
+  // Debounced search state
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  // Separate states for featured sections
-  const [bestsellerLoading, setBestsellerLoading] = useState(false);
-  const [trendingLoading, setTrendingLoading] = useState(false);
 
   // 1. Fetch Categories on Mount
   useEffect(() => {
@@ -232,18 +230,20 @@ const Collections = () => {
         );
         if (response.ok) {
           const data = await response.json();
-          setCategories(["All", ...data]); // Ensure "All" is first
+          setCategories(["All", ...data]);
+        } else {
+          // Fallback
+          setCategories(["All", "Rings", "Necklaces", "Earrings", "Bracelets"]);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
-        // Fallback categories
         setCategories(["All", "Rings", "Necklaces", "Earrings", "Bracelets"]);
       }
     };
     fetchCategories();
   }, []);
 
-  // 2. Debounce Logic
+  // 2. Debounce search logic
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -251,16 +251,16 @@ const Collections = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 3. Fetch ALL Products (main filterable section)
+  // 3. Fetch ALL products for main filterable section
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchAllProducts = async () => {
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
         if (selectedCategory !== "All") {
           params.append("category", selectedCategory);
         }
-        if (debouncedSearch) {
+        if (debouncedSearch.trim()) {
           params.append("search", debouncedSearch);
         }
 
@@ -284,11 +284,10 @@ const Collections = () => {
         setIsLoading(false);
       }
     };
-
-    fetchProducts();
+    fetchAllProducts();
   }, [selectedCategory, debouncedSearch]);
 
-  // 4. Fetch Bestseller Products (isBestseller=true ONLY)
+  // 4. Fetch Bestseller products (ONLY where isBestseller=true)
   useEffect(() => {
     const fetchBestsellers = async () => {
       setBestsellerLoading(true);
@@ -315,7 +314,7 @@ const Collections = () => {
     fetchBestsellers();
   }, []);
 
-  // 5. Fetch Trending Products (isTrending=true ONLY)
+  // 5. Fetch Trending products (ONLY where isTrending=true)
   useEffect(() => {
     const fetchTrending = async () => {
       setTrendingLoading(true);
@@ -344,10 +343,10 @@ const Collections = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 md:py-12">
         {/* Main Title */}
         <motion.h1
-          className="text-4xl font-serif font-bold text-foreground mb-12"
+          className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-foreground mb-12 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -355,72 +354,72 @@ const Collections = () => {
           Our Collections
         </motion.h1>
 
-        {/* 🏆 BESTSELLERS SECTION - Only shows isBestseller=true products */}
-        {bestsellerProducts.length > 0 && !bestsellerLoading && (
+        {/* 🏆 BESTSELLERS SECTION */}
+        {!bestsellerLoading && bestsellerProducts.length > 0 && (
+          <motion.section
+            className="mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-amber-100">
+              <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-xl">
+                <Award className="h-8 w-8 text-white drop-shadow-lg" />
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
+                  🏆 Bestsellers
+                </h2>
+                <p className="text-lg text-muted-foreground font-medium mt-1">
+                  Most loved by customers
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {bestsellerProducts.slice(0, 12).map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* 📈 TRENDING SECTION */}
+        {!trendingLoading && trendingProducts.length > 0 && (
           <motion.section
             className="mb-16"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border">
-              <div className="p-3 bg-amber-500 rounded-2xl shadow-lg">
-                <Award className="h-8 w-8 text-white" />
+            <div className="flex items-center gap-4 mb-8 pb-6 border-b-2 border-emerald-100">
+              <div className="p-3 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl shadow-xl">
+                <TrendingUp className="h-8 w-8 text-white drop-shadow-lg" />
               </div>
               <div>
-                <h2 className="text-3xl font-serif font-bold text-foreground">
-                  🏆 Bestsellers
-                </h2>
-                <p className="text-xl text-muted-foreground font-medium">
-                  Customer favorites you can't miss
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {bestsellerProducts.slice(0, 10).map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileHover={{ scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-        )}
-
-        {/* 📈 TRENDING SECTION - Only shows isTrending=true products */}
-        {trendingProducts.length > 0 && !trendingLoading && (
-          <motion.section
-            className="mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="flex items-center gap-4 mb-8 pb-6 border-b border-border">
-              <div className="p-3 bg-emerald-500 rounded-2xl shadow-lg">
-                <TrendingUp className="h-8 w-8 text-white" />
-              </div>
-              <div>
-                <h2 className="text-3xl font-serif font-bold text-foreground">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold bg-gradient-to-r from-emerald-600 to-emerald-800 bg-clip-text text-transparent">
                   📈 Trending Now
                 </h2>
-                <p className="text-xl text-muted-foreground font-medium">
-                  What's hot in jewelry right now
+                <p className="text-lg text-muted-foreground font-medium mt-1">
+                  What's hot right now
                 </p>
               </div>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {trendingProducts.slice(0, 10).map((product, index) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {trendingProducts.slice(0, 12).map((product, index) => (
                 <motion.div
                   key={product.id}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileHover={{ scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
                 >
                   <ProductCard product={product} />
                 </motion.div>
@@ -429,43 +428,42 @@ const Collections = () => {
           </motion.section>
         )}
 
-        {/* Search & Category Filters */}
-        <motion.div
-          className="mb-12"
+        {/* Filters Section */}
+        <motion.section
+          className="mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
           <div className="relative mb-8">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search rings, necklaces, earrings..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-lg"
+              className="pl-14 h-12 text-lg shadow-sm"
             />
           </div>
 
-          {/* Category Filter Buttons */}
-          <div className="flex flex-wrap gap-2 sm:gap-3">
+          <div className="flex flex-wrap gap-3 justify-center">
             {categories.map((category, index) => (
               <motion.div
                 key={category}
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.2 + index * 0.05 }}
+                transition={{ duration: 0.3, delay: 0.1 + index * 0.04 }}
               >
                 <Button
                   variant={
                     selectedCategory === category ? "default" : "outline"
                   }
-                  size="sm"
+                  size="lg"
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 font-medium transition-all duration-300 ${
+                  className={`px-6 py-2 font-semibold transition-all duration-300 shadow-md hover:shadow-lg ${
                     selectedCategory === category
-                      ? "shadow-lg shadow-primary/25 scale-[1.02] bg-gradient-to-r from-primary to-primary/80"
-                      : "hover:scale-[1.02] hover:shadow-md hover:bg-accent hover:text-foreground border-border"
+                      ? "bg-gradient-to-r from-primary to-primary/90 scale-105"
+                      : "hover:scale-105 hover:bg-accent hover:shadow-primary/20"
                   }`}
                 >
                   {category}
@@ -473,31 +471,31 @@ const Collections = () => {
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </motion.section>
 
         {/* Main Products Grid */}
-        <motion.div
+        <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
         >
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-24 space-y-4">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="text-lg text-muted-foreground">
-                Loading collections...
+            <div className="flex flex-col items-center justify-center py-32 space-y-6">
+              <Loader2 className="h-16 w-16 animate-spin text-primary" />
+              <p className="text-xl text-muted-foreground font-medium">
+                Loading beautiful collections...
               </p>
             </div>
           ) : allProducts.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-6">
               {allProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.4, delay: index * 0.03 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  whileHover={{ y: -8, scale: 1.03 }}
+                  transition={{ duration: 0.4, delay: index * 0.02 }}
                 >
                   <ProductCard product={product} />
                 </motion.div>
@@ -505,21 +503,24 @@ const Collections = () => {
             </div>
           ) : (
             <motion.div
-              className="col-span-full flex flex-col items-center justify-center py-24 text-center"
+              className="col-span-full flex flex-col items-center justify-center py-32 text-center space-y-6"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <Search className="h-16 w-16 text-muted-foreground mb-6 opacity-50" />
-              <h3 className="text-2xl font-serif font-bold text-foreground mb-2">
+              <div className="w-24 h-24 bg-muted rounded-2xl flex items-center justify-center mb-6">
+                <Search className="h-12 w-12 text-muted-foreground opacity-50" />
+              </div>
+              <h3 className="text-3xl font-serif font-bold text-foreground">
                 No products found
               </h3>
-              <p className="text-lg text-muted-foreground max-w-md">
-                Try adjusting your search or category filters above.
+              <p className="text-xl text-muted-foreground max-w-lg mx-auto">
+                Try searching something else or browse our featured collections
+                above.
               </p>
             </motion.div>
           )}
-        </motion.div>
+        </motion.section>
       </main>
 
       <Footer />
