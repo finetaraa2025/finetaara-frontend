@@ -190,7 +190,7 @@ const Footer = () => {
             </h4>
             <ul className="space-y-3">
               <FooterLink to="/contact" label="Contact Us" />
-              <FooterLink to="/contact" label="Shipping & Returns" />
+              <FooterLink to="/returns" label="Returns Policy" />
               <FooterLink to="/contact" label="FAQ" />
               {/* <FooterLink to="/size-guide" label="Size Guide" /> */}
             </ul>
