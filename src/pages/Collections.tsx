@@ -230,9 +230,13 @@ const Collections = () => {
         );
         if (response.ok) {
           const data = await response.json();
-          setCategories(["All", ...data]);
+          const uniqueCategories = [
+            "All",
+            ...data.filter((cat: string) => cat !== "All"),
+          ];
+          setCategories(uniqueCategories);
         } else {
-          setCategories(["Rings", "Necklaces", "Earrings", "Bracelets"]);
+          setCategories(["All", "Rings", "Necklaces", "Earrings", "Bracelets"]);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
