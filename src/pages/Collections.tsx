@@ -232,7 +232,7 @@ const Collections = () => {
           const data = await response.json();
           setCategories(["All", ...data]);
         } else {
-          setCategories(["All", "Rings", "Necklaces", "Earrings", "Bracelets"]);
+          setCategories(["Rings", "Necklaces", "Earrings", "Bracelets"]);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
