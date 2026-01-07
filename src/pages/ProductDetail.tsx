@@ -877,7 +877,6 @@ const ProductDetailPage = () => {
                   <p className="text-lg text-primary font-medium mb-4">
                     {product.category}
                   </p> */}
-                  // In ProductDetail.tsx, find this section (around line 300):
                   <div className="flex justify-between items-start mb-2">
                     <h1 className="text-3xl font-bold text-foreground leading-tight">
                       {product.name}
@@ -889,7 +888,6 @@ const ProductDetailPage = () => {
                       <Share2 className="w-5 h-5" />
                     </button>
                   </div>
-                  // ADD THIS BADGES SECTION RIGHT AFTER:
                   {product.isBestseller || product.isTrending ? (
                     <div className="flex items-center gap-2 mb-4">
                       {product.isBestseller && (
@@ -906,7 +904,7 @@ const ProductDetailPage = () => {
                       )}
                     </div>
                   ) : null}
-                  // Then continue with:
+
                   <p className="text-lg text-primary font-medium mb-4">
                     {product.category}
                   </p>
