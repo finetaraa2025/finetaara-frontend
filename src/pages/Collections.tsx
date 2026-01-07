@@ -198,7 +198,7 @@
 
 // export default Collections;
 import { useState, useEffect } from "react";
-import { Search, Loader2, Award, TrendingUp } from "lucide-react"; // Added new icons
+import { Search, Loader2, Award, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import ProductCard from "@/components/ProductCard";
 import { Input } from "@/components/ui/input";
@@ -208,18 +208,20 @@ import Footer from "@/components/Footer";
 import { Product } from "@/context/CartContext";
 
 const Collections = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [bestsellerProducts, setBestsellerProducts] = useState<Product[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(["All"]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  // State for the "debounced" search term (updates only after user stops typing)
+  // State for the "debounced" search term
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
-  // NEW: Bestseller and Trending filter states
-  const [isBestsellerFilter, setIsBestsellerFilter] = useState(false);
-  const [isTrendingFilter, setIsTrendingFilter] = useState(false);
+  // NEW: Separate states for featured sections (always show flagged products)
+  const [bestsellerLoading, setBestsellerLoading] = useState(false);
+  const [trendingLoading, setTrendingLoading] = useState(false);
 
   // 1. Fetch Categories on Mount
   useEffect(() => {
@@ -230,7 +232,7 @@ const Collections = () => {
         );
         if (response.ok) {
           const data = await response.json();
-          setCategories(data);
+          setCategories(["All", ...data]); // Ensure "All" is first
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -239,7 +241,7 @@ const Collections = () => {
     fetchCategories();
   }, []);
 
-  // 2. Debounce Logic: Update 'debouncedSearch' 500ms after user stops typing
+  // 2. Debounce Logic
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -247,28 +249,17 @@ const Collections = () => {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // 3. Fetch Products when ANY filter changes
+  // 3. Fetch ALL Products (for main filterable section)
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        // Build the query string based on ALL filters
         const params = new URLSearchParams();
-
         if (selectedCategory !== "All") {
           params.append("category", selectedCategory);
         }
-
         if (debouncedSearch) {
           params.append("search", debouncedSearch);
-        }
-
-        // NEW: Bestseller and Trending filters
-        if (isBestsellerFilter) {
-          params.append("is_bestseller", "true");
-        }
-        if (isTrendingFilter) {
-          params.append("is_trending", "true");
         }
 
         const response = await fetch(
@@ -279,12 +270,11 @@ const Collections = () => {
 
         if (response.ok) {
           const data = await response.json();
-          // Ensure IDs are strings to match frontend interface
           const formattedData = data.map((item: any) => ({
             ...item,
             id: String(item.id),
           }));
-          setProducts(formattedData);
+          setAllProducts(formattedData);
         }
       } catch (error) {
         console.error("Failed to fetch products:", error);
@@ -294,14 +284,59 @@ const Collections = () => {
     };
 
     fetchProducts();
-  }, [selectedCategory, debouncedSearch, isBestsellerFilter, isTrendingFilter]); // Added new dependencies
+  }, [selectedCategory, debouncedSearch]);
 
-  // NEW: Filter button styling helper
-  const getFilterButtonVariant = (filterType: string) => {
-    if (filterType === "bestseller" && isBestsellerFilter) return "default";
-    if (filterType === "trending" && isTrendingFilter) return "default";
-    return "outline";
-  };
+  // 4. NEW: Fetch Bestseller Products (only where isBestseller=true)
+  useEffect(() => {
+    const fetchBestsellers = async () => {
+      setBestsellerLoading(true);
+      try {
+        const response = await fetch(
+          `${
+            import.meta.env.VITE_API_BASE_URL
+          }/api/products/?is_bestseller=true`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const formattedData = data.map((item: any) => ({
+            ...item,
+            id: String(item.id),
+          }));
+          setBestsellerProducts(formattedData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch bestsellers:", error);
+      } finally {
+        setBestsellerLoading(false);
+      }
+    };
+    fetchBestsellers();
+  }, []);
+
+  // 5. NEW: Fetch Trending Products (only where isTrending=true)
+  useEffect(() => {
+    const fetchTrending = async () => {
+      setTrendingLoading(true);
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/products/?is_trending=true`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const formattedData = data.map((item: any) => ({
+            ...item,
+            id: String(item.id),
+          }));
+          setTrendingProducts(formattedData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch trending:", error);
+      } finally {
+        setTrendingLoading(false);
+      }
+    };
+    fetchTrending();
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -317,11 +352,70 @@ const Collections = () => {
           Our Collections
         </motion.h1>
 
+        {/* NEW: Bestseller Section */}
+        {bestsellerProducts.length > 0 && (
+          <motion.section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-amber-500 rounded-xl">
+                <Award className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  🏆 Bestsellers
+                </h2>
+                <p className="text-muted-foreground">Customer favorites</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {bestsellerProducts.slice(0, 8).map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* NEW: Trending Section */}
+        {trendingProducts.length > 0 && (
+          <motion.section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-emerald-500 rounded-xl">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-foreground">
+                  📈 Trending Now
+                </h2>
+                <p className="text-muted-foreground">Hot right now</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {trendingProducts.slice(0, 8).map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Search & Category Filters (for remaining products) */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -334,8 +428,7 @@ const Collections = () => {
             />
           </div>
 
-          {/* Categories Buttons */}
-          <div className="flex flex-wrap gap-3 mb-6">
+          <div className="flex flex-wrap gap-3">
             {categories.map((category, index) => (
               <motion.div
                 key={category}
@@ -362,78 +455,17 @@ const Collections = () => {
               </motion.div>
             ))}
           </div>
-
-          {/* NEW: Bestseller & Trending Filter Buttons */}
-          <div className="flex flex-wrap gap-3 mb-8">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <Button
-                variant={getFilterButtonVariant("bestseller")}
-                onClick={() => setIsBestsellerFilter(!isBestsellerFilter)}
-                className={`relative overflow-hidden transition-all duration-300 flex items-center gap-2 group ${
-                  isBestsellerFilter
-                    ? "shadow-lg scale-105 bg-amber-500 hover:bg-amber-600"
-                    : "hover:scale-105 hover:shadow-md border-amber-200 hover:border-amber-300 hover:bg-amber-50"
-                }`}
-              >
-                <Award
-                  className={`h-4 w-4 ${
-                    isBestsellerFilter ? "fill-current" : ""
-                  }`}
-                />
-                <span className="relative z-10 font-medium">Bestseller</span>
-                {isBestsellerFilter && (
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 animate-pulse"
-                    layoutId="bestseller-glow"
-                  />
-                )}
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.25 }}
-            >
-              <Button
-                variant={getFilterButtonVariant("trending")}
-                onClick={() => setIsTrendingFilter(!isTrendingFilter)}
-                className={`relative overflow-hidden transition-all duration-300 flex items-center gap-2 group ${
-                  isTrendingFilter
-                    ? "shadow-lg scale-105 bg-emerald-500 hover:bg-emerald-600"
-                    : "hover:scale-105 hover:shadow-md border-emerald-200 hover:border-emerald-300 hover:bg-emerald-50"
-                }`}
-              >
-                <TrendingUp
-                  className={`h-4 w-4 ${
-                    isTrendingFilter ? "fill-current" : ""
-                  }`}
-                />
-                <span className="relative z-10 font-medium">Trending</span>
-                {isTrendingFilter && (
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-600 animate-pulse"
-                    layoutId="trending-glow"
-                  />
-                )}
-              </Button>
-            </motion.div>
-          </div>
         </motion.div>
 
-        {/* Products Grid */}
+        {/* Main Products Grid */}
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
-            {products.length > 0 ? (
-              products.map((product, index) => (
+            {allProducts.length > 0 ? (
+              allProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 30 }}
