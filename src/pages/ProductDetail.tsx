@@ -520,6 +520,8 @@ import {
   ShieldCheck,
   // RefreshCcw,
   ChevronDown,
+  TrendingUp,
+  Award,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -861,8 +863,7 @@ const ProductDetailPage = () => {
               <div className="sticky top-24 space-y-8">
                 {/* Product Header */}
                 <div>
-                  <div className="flex justify-between items-start mb-2">
-                    {/* Changed text-gray-900 to text-foreground */}
+                  {/* <div className="flex justify-between items-start mb-2">
                     <h1 className="text-3xl font-bold text-foreground leading-tight">
                       {product.name}
                     </h1>
@@ -875,8 +876,40 @@ const ProductDetailPage = () => {
                   </div>
                   <p className="text-lg text-primary font-medium mb-4">
                     {product.category}
+                  </p> */}
+                  // In ProductDetail.tsx, find this section (around line 300):
+                  <div className="flex justify-between items-start mb-2">
+                    <h1 className="text-3xl font-bold text-foreground leading-tight">
+                      {product.name}
+                    </h1>
+                    <button
+                      onClick={handleShare}
+                      className="hidden md:flex p-2 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-full transition-colors"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                  // ADD THIS BADGES SECTION RIGHT AFTER:
+                  {product.isBestseller || product.isTrending ? (
+                    <div className="flex items-center gap-2 mb-4">
+                      {product.isBestseller && (
+                        <div className="flex items-center gap-1 px-3 py-1.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200 rounded-full text-sm font-semibold border border-amber-200 dark:border-amber-700">
+                          <Award className="w-4 h-4" />
+                          Bestseller
+                        </div>
+                      )}
+                      {product.isTrending && (
+                        <div className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200 rounded-full text-sm font-semibold border border-emerald-200 dark:border-emerald-700">
+                          <TrendingUp className="w-4 h-4" />
+                          Trending
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                  // Then continue with:
+                  <p className="text-lg text-primary font-medium mb-4">
+                    {product.category}
                   </p>
-
                   {/* Rating */}
                   <div className="flex items-center gap-2">
                     <div className="flex text-yellow-400">

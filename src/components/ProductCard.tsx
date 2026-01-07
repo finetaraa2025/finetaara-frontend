@@ -1,5 +1,5 @@
 // import { useState, useEffect } from "react";
-// import { Plus, Minus, ShoppingCart } from "lucide-react";
+// import { Plus, Minus, ShoppingCart, Star } from "lucide-react"; // Import Star
 // import { Product, useCart } from "@/context/CartContext";
 // import { Button } from "@/components/ui/button";
 // import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -25,6 +25,10 @@
 
 //   const cartItem = cart.find((item) => item.id === product.id);
 //   const hasImages = product.images && product.images.length > 0;
+
+//   // Use values from product or default to 0
+//   const rating = product.rating || 0;
+//   const reviewCount = product.ratingCount || 0;
 
 //   useEffect(() => {
 //     if (!hasImages || !product.images) return;
@@ -65,9 +69,27 @@
 //     navigate(`/products/${product.id}`);
 //   };
 
+//   // Helper to render dynamic stars
+//   const renderStars = (rating: number) => {
+//     return (
+//       <div className="flex">
+//         {[1, 2, 3, 4, 5].map((star) => (
+//           <Star
+//             key={star}
+//             className={`w-3 h-3 sm:w-4 sm:h-4 ${
+//               star <= Math.round(rating)
+//                 ? "fill-yellow-500 text-yellow-500"
+//                 : "text-gray-300 fill-gray-100"
+//             }`}
+//           />
+//         ))}
+//       </div>
+//     );
+//   };
+
 //   return (
 //     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-//       {/* Image - Responsive Height: h-48 on mobile, h-80 on desktop */}
+//       {/* ... (Image Section remains unchanged) ... */}
 //       <div
 //         className="relative h-48 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer shrink-0"
 //         onClick={handleCardClick}
@@ -103,7 +125,6 @@
 //           </div>
 //         )}
 
-//         {/* Dots indicator - hidden on very small screens if needed, or kept small */}
 //         {hasImages && (
 //           <div className="absolute bottom-2 right-2 flex gap-1 z-10">
 //             {product.images.map((_, index) => (
@@ -127,8 +148,12 @@
 //           {product.category}
 //         </p>
 
-//         <div className="flex items-center gap-2 mb-2 sm:mb-3 text-xs text-yellow-500 font-semibold">
-//           ★★★★☆ (127)
+//         {/* DYNAMIC RATING SECTION */}
+//         <div className="flex items-center gap-1 mb-2 sm:mb-3">
+//           {renderStars(rating)}
+//           <span className="text-xs text-gray-500 font-medium ml-1">
+//             ({reviewCount})
+//           </span>
 //         </div>
 
 //         <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-3">
@@ -149,11 +174,11 @@
 //         </div>
 
 //         <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 hidden sm:block">
-//           {stripHtml(product.description)}
+//           {stripHtml(product.description || "")}
 //         </p>
 //       </CardContent>
 
-//       {/* Footer */}
+//       {/* Footer remains unchanged */}
 //       <CardFooter className="p-3 sm:p-4 pt-0 mt-auto">
 //         {!product.inStock ? (
 //           <Button
@@ -163,9 +188,7 @@
 //             Out of Stock
 //           </Button>
 //         ) : !cartItem ? (
-//           // LAYOUT FIX: Changed flex-row to flex-col on mobile to prevent overflow
 //           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
-//             {/* Quantity Selector - Full width on mobile */}
 //             <div className="flex items-center justify-center border border-gray-300 rounded-md h-8 sm:h-10 w-full sm:w-auto">
 //               <Button
 //                 variant="ghost"
@@ -188,7 +211,6 @@
 //               </Button>
 //             </div>
 
-//             {/* Add Button - Full width on mobile */}
 //             <Button
 //               onClick={handleAddToCart}
 //               className="flex-1 h-8 sm:h-10 text-xs sm:text-sm"
@@ -197,7 +219,6 @@
 //             </Button>
 //           </div>
 //         ) : (
-//           // In Cart State
 //           <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
 //             <div className="flex items-center justify-center border border-gray-300 rounded-md w-full sm:w-auto h-8 sm:h-10">
 //               <Button
@@ -235,8 +256,16 @@
 // };
 
 // export default ProductCard;
+
 import { useState, useEffect } from "react";
-import { Plus, Minus, ShoppingCart, Star } from "lucide-react"; // Import Star
+import {
+  Plus,
+  Minus,
+  ShoppingCart,
+  Star,
+  TrendingUp,
+  Award,
+} from "lucide-react"; // Added new icons
 import { Product, useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -262,8 +291,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   const cartItem = cart.find((item) => item.id === product.id);
   const hasImages = product.images && product.images.length > 0;
-
-  // Use values from product or default to 0
   const rating = product.rating || 0;
   const reviewCount = product.ratingCount || 0;
 
@@ -306,7 +333,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
     navigate(`/products/${product.id}`);
   };
 
-  // Helper to render dynamic stars
   const renderStars = (rating: number) => {
     return (
       <div className="flex">
@@ -325,10 +351,33 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-      {/* ... (Image Section remains unchanged) ... */}
+    <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300 h-full flex flex-col relative">
+      {/* Badges Container */}
+      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1 sm:gap-2 z-20">
+        {product.discountPercent && (
+          <div className="bg-red-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg">
+            {product.discountPercent}% OFF
+          </div>
+        )}
+
+        {product.isBestseller && (
+          <div className="bg-amber-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-1">
+            <Award className="w-3 h-3 sm:w-4 sm:h-4" />
+            Bestseller
+          </div>
+        )}
+
+        {product.isTrending && (
+          <div className="bg-emerald-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg flex items-center gap-1">
+            <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
+            Trending
+          </div>
+        )}
+      </div>
+
+      {/* Image Section */}
       <div
-        className="relative h-48 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer shrink-0"
+        className="relative h-48 sm:h-80 overflow-hidden bg-gray-100 cursor-pointer shrink-0 pt-12 sm:pt-16"
         onClick={handleCardClick}
       >
         {hasImages ? (
@@ -345,12 +394,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400">
             No Image
-          </div>
-        )}
-
-        {product.discountPercent && (
-          <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-red-500 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-bold shadow-lg z-10">
-            {product.discountPercent}% OFF
           </div>
         )}
 
@@ -385,7 +428,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.category}
         </p>
 
-        {/* DYNAMIC RATING SECTION */}
         <div className="flex items-center gap-1 mb-2 sm:mb-3">
           {renderStars(rating)}
           <span className="text-xs text-gray-500 font-medium ml-1">
@@ -415,7 +457,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </p>
       </CardContent>
 
-      {/* Footer remains unchanged */}
+      {/* Footer - unchanged */}
       <CardFooter className="p-3 sm:p-4 pt-0 mt-auto">
         {!product.inStock ? (
           <Button

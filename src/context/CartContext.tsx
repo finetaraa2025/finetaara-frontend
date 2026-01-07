@@ -147,6 +147,8 @@ export interface Product {
   inStock: boolean;
   rating?: number;
   ratingCount?: number;
+  isBestseller?: boolean; // New flag - defaults to false
+  isTrending?: boolean; // New flag - defaults to false
 }
 
 export interface CartItem extends Product {
